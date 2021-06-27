@@ -36,28 +36,25 @@ pub async fn auth(subject: &UserDTO, ressource: &str) -> bool {
     }
 }
 
-/**
-#[cfg(test)]
-mod test_access_control {
-    use super::*;
-    use rstest::rstest;
+//#[cfg(test)]
+//mod test_access_control {
+//    use super::*;
+//    use rstest::rstest;
 
-    #[rstest(
-        input,
-        ressource,
-        expected,
-        case(UserDTO {id: "admin".to_owned(), email: "admin".to_owned()}, TEACHER_ACC, true),
-        case(UserDTO {id: "admin".to_owned(), email: "admin".to_owned()}, STUDENT_ACC, true),
-        case(UserDTO {id: "admin".to_owned(), email: "admin".to_owned()}, SHOW_GRADES, true),
-        case(UserDTO {id: "admin".to_owned(), email: "admin".to_owned()}, ENTER_GRADE, true),
-        case(UserDTO {id: "123".to_owned(), email: "123@123.ch".to_owned()}, TEACHER_ACC, false),
-        case(UserDTO {id: "123".to_owned(), email: "123@123.ch".to_owned()}, STUDENT_ACC, false),
-        case(UserDTO {id: "123".to_owned(), email: "123@123.ch".to_owned()}, SHOW_GRADES, false),
-        case(UserDTO {id: "123".to_owned(), email: "123@123.ch".to_owned()}, ENTER_GRADE, false)
-    )]
-    pub fn access_control_test(input: UserDTO, ressource: &str, expected: bool) {
-        assert_eq!(auth(&input, ressource), expected);
-    }
-}
-**/
-fn plop() {}
+//    #[rstest(
+//        input,
+//        ressource,
+//        expected,
+//        case(UserDTO {id: "admin".to_owned(), email: "admin".to_owned()}, TEACHER_ACC, true),
+//        case(UserDTO {id: "admin".to_owned(), email: "admin".to_owned()}, STUDENT_ACC, true),
+//        case(UserDTO {id: "admin".to_owned(), email: "admin".to_owned()}, SHOW_GRADES, true),
+//        case(UserDTO {id: "admin".to_owned(), email: "admin".to_owned()}, ENTER_GRADE, true),
+//        case(UserDTO {id: "123".to_owned(), email: "123@123.ch".to_owned()}, TEACHER_ACC, false),
+//        case(UserDTO {id: "123".to_owned(), email: "123@123.ch".to_owned()}, STUDENT_ACC, false),
+//        case(UserDTO {id: "123".to_owned(), email: "123@123.ch".to_owned()}, SHOW_GRADES, false),
+//        case(UserDTO {id: "123".to_owned(), email: "123@123.ch".to_owned()}, ENTER_GRADE, false)
+//    )]
+//    pub fn access_control_test(input: UserDTO, ressource: &str, expected: bool) {
+//        assert_eq!(auth(&input, ressource), expected);
+//    }
+//}
