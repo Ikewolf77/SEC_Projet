@@ -31,3 +31,22 @@ pub fn padded_hash(pw: &str) -> [u8; 128] {
     });
     return padded;
 }
+
+#[cfg(test)]
+mod test_student {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest(
+        input,
+        case("myPassword"),
+        case("AnotherOne"),
+        case("r38zrw789FG/(wgF/(gae78FG08ae7F/aezF78aezf78'ze9PFHAJf"),
+        case(""),
+        ::trace
+    )]
+    pub fn test_hash(input: &str) {
+        let hash = padded_hash(input);
+        assert!(verify(hash, input));
+    }
+}

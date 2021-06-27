@@ -41,6 +41,7 @@ pub struct User {
     pub grades: Vec<f32>,
 }
 
+#[derive(Debug)]
 pub struct UserDTO {
     pub id: String,
     pub email: String,
