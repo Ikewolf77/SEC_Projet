@@ -20,6 +20,8 @@ Dans cette application, on a 3 niveaux de droits :
 - Un Student peut (pw) :
     - Regarder ses notes
 
+Pour se loger, un personne donne son email professionel et son mot de passe, défini par un professeur ou un admin
+
 ## Logs :
 - Tous les logs sont enregistrés dans temp/app.log
 - Chaque appel de fonction crée un "trace"

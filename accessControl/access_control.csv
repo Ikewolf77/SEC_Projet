@@ -1,5 +1,8 @@
 p, admin, create_teacher_account
 p, teacher, create_account
 p, teacher, show_all_grades
+p, teacher, enter_grade
 
 p, admin, teacher
+
+g, admin, admin

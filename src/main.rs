@@ -1,5 +1,10 @@
+mod access_control;
 mod actions;
 mod db;
+
+extern crate strum;
+#[macro_use]
+extern crate strum_macros;
 
 use actions::student_action;
 use actions::teacher_action;
