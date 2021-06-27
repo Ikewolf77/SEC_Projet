@@ -1,5 +1,6 @@
-mod db;
+extern crate csv;
 
+mod db;
 use db::create_account;
 use db::enter_grade;
 use db::login;
@@ -35,7 +36,10 @@ fn menu(user: &UserDTO) {
         4 => create_account(user, true),
         5 => about(),
         0 => quit(),
-        _ => panic!("impossible choice"),
+        _ => {
+            error!("Impossible choice in menu by {}", user.email);
+            panic!("impossible choice")
+        }
     }
 }
 
@@ -52,14 +56,6 @@ fn quit() {
     std::process::exit(0);
 }
 
-/**
-fn main() {
-    println!(
-        "{:?}",
-        padded_hash("adminOfKing2021ButMoreWordsToRandomMakeItHard"),
-    );
-}
-**/
 fn main() {
     let _ = log4rs::init_file("logConfig.yaml", Default::default()).unwrap();
     welcome();

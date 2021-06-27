@@ -32,11 +32,11 @@ Pour se loger, un personne donne son email professionel et son mot de passe, dé
 
 ## Input / Output :
 - Chaque input est parsé et vérifié selon le type d'action
-- Les personnes sont définies avec un UUID unique
-- Les Fichiers sont définis par un UUID unique
+- Les personnes sont définies avec un UUID unique, utilisé surtout pour le contrôle d'accès. L'email est aussi unique, et utilisé quand nécessaire.
+- Les Fichiers de db sont définis par un UUID unique
 
 ## CIA
-- Les fichiers de base de donnée sont encodés symétriquement
+- Les fichiers de db sont encodés symétriquement
 
 ## Tests
 - Les fonctions importantes sont testées (cas limites)

@@ -6,13 +6,24 @@ use zxcvbn::zxcvbn;
 lazy_static! {
     static ref EMAIL_RE: Regex =
         Regex::new(r"^(?i)[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$").unwrap();
+    static ref NAME_RE: Regex = Regex::new(r"^[a-zA-Zàâçéèêëîïôûùüÿñæœ .-]{2,20}$").unwrap();
 }
 
-pub fn ask_for_email() -> String {
+pub fn ask_for_name() -> String {
     input::<String>()
-        .msg("Please enter your email address (also username):\n")
+        .msg("Please enter their name:\n")
         .add_err_test(
-            move |input| EMAIL_RE.is_match(&*input),
+            move |input| NAME_RE.is_match(&*input),
+            "This does not look like a valid name, try again",
+        )
+        .get()
+}
+
+pub fn ask_for_email(isLogin: bool) -> String {
+    input::<String>()
+        .msg("Please enter an email address:\n")
+        .add_err_test(
+            move |input| (EMAIL_RE.is_match(&*input) || (input.eq("admin") && isLogin)),
             "This does not look like a valid email, try again",
         )
         .get()
@@ -20,7 +31,7 @@ pub fn ask_for_email() -> String {
 
 pub fn ask_for_pw() -> String {
     input::<String>()
-        .repeat_msg("Please enter the password for this account")
+        .repeat_msg("Please enter the password for this account:\n")
         .add_err_test(move |input| !(input.len() < 8), "\nPassword too short\n")
         .add_err_test(move |input| !(input.len() > 64), "\nPassword too long\n")
         .add_err_test(

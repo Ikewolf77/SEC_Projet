@@ -1,12 +1,15 @@
+use csv::{QuoteStyle, WriterBuilder};
 use futures::executor::block_on;
 use lazy_static::{__Deref, lazy_static};
 use read_input::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
 use std::sync::Mutex;
+use uuid::Uuid;
 
 use log::{error, info, trace, warn};
 
@@ -19,6 +22,7 @@ use hash::verify;
 
 pub mod utils;
 use utils::ask_for_email;
+use utils::ask_for_name;
 use utils::ask_for_pw;
 
 pub mod access_control;
@@ -60,7 +64,7 @@ const NOT_ALLOWED_MSG: &str = "You are not allowed to do that!";
 pub fn login() -> Option<UserDTO> {
     trace!("Login");
 
-    let email = ask_for_email();
+    let email = ask_for_email(true);
 
     let pw = input::<String>().msg("Please enter your password:\n").get();
 
@@ -88,6 +92,8 @@ pub fn login() -> Option<UserDTO> {
 }
 
 pub fn create_account(user: &UserDTO, is_teacher_account: bool) {
+    trace!("create_account");
+    //check access control
     if is_teacher_account {
         if !block_on(access_control::auth(user, access_control::TEACHER_ACC)) {
             println!("{}", NOT_ALLOWED_MSG);
@@ -99,12 +105,48 @@ pub fn create_account(user: &UserDTO, is_teacher_account: bool) {
             return;
         }
     }
+
+    //ask for info
+    let email = &ask_for_email(false);
+    let pw = ask_for_pw();
+    let name = ask_for_name();
+    let id = &Uuid::new_v4().to_string();
+
+    //save in database
+    let mut data = DATABASE.lock().unwrap();
+    data.push(User {
+        id: String::from(id),
+        email: String::from(email),
+        name: name,
+        pw_hash: padded_hash(&pw),
+        grades: Vec::new(),
+    });
+
+    //Write into access_control.csv a new teacher with access
+    if is_teacher_account {
+        let file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(access_control::POLICY)
+            .unwrap();
+        let mut wtr = WriterBuilder::new()
+            .quote_style(csv::QuoteStyle::Never)
+            .from_writer(file);
+        wtr.write_record(&[&format!("\ng, {}, teacher", id)])
+            .unwrap();
+        wtr.flush().unwrap();
+        info!("{} Created a teacher account : {}", user.email, email)
+    } else {
+        info!("{} Created a student account : {}", user.email, email)
+    }
+
+    std::mem::drop(data);
+    save_database_to_file();
 }
 
 pub fn enter_grade() {
     trace!("Enter_grade");
-    println!("What is the email of the student?");
-    let email: String = input().get();
+    let email = ask_for_email(false);
     println!("What is the new grade of the student?");
     let grade: f32 = input().add_test(|x| *x >= 0.0 && *x <= 6.0).get();
     let mut data = DATABASE.lock().unwrap();
@@ -116,7 +158,10 @@ pub fn enter_grade() {
         }
     }
     println!("No Student found with that email");
-    warn!("No Student found with that email")
+    warn!("No Student found with that email");
+
+    std::mem::drop(data);
+    save_database_to_file();
 }
 
 pub fn show_grades() {
