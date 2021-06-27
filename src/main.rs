@@ -4,6 +4,7 @@ mod db;
 use db::create_account;
 use db::enter_grade;
 use db::login;
+use db::reset_password;
 use db::save_database_to_file;
 use db::show_grades;
 use db::UserDTO;
@@ -26,15 +27,17 @@ fn menu(user: &UserDTO) {
         3: (Teachers): Create a student
         4: (Admin): Create a teacher
         5: About
+        6: Change your password
         0: Quit"
     );
-    let choice = input().inside(0..=5).msg("Enter Your choice: ").get();
+    let choice = input().inside(0..=6).msg("Enter Your choice: ").get();
     match choice {
-        //1 => show_grades(user),
-        //2 => enter_grade(user),
+        1 => show_grades(user),
+        2 => enter_grade(user),
         3 => create_account(user, false),
         4 => create_account(user, true),
         5 => about(),
+        6 => reset_password(user),
         0 => quit(),
         _ => {
             error!("Impossible choice in menu by {}", user.email);
@@ -58,6 +61,8 @@ fn quit() {
 
 fn main() {
     let _ = log4rs::init_file("logConfig.yaml", Default::default()).unwrap();
+    sodiumoxide::init().unwrap();
+
     welcome();
     let user = login();
 

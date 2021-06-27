@@ -19,19 +19,25 @@ pub fn ask_for_name() -> String {
         .get()
 }
 
-pub fn ask_for_email(isLogin: bool) -> String {
+pub fn ask_for_email(is_login: bool) -> String {
     input::<String>()
         .msg("Please enter an email address:\n")
         .add_err_test(
-            move |input| (EMAIL_RE.is_match(&*input) || (input.eq("admin") && isLogin)),
+            move |input| (EMAIL_RE.is_match(&*input) || (input.eq("admin") && is_login)),
             "This does not look like a valid email, try again",
         )
         .get()
 }
 
-pub fn ask_for_pw() -> String {
+pub fn ask_for_pw(is_new: bool) -> String {
+    let msg = if is_new {
+        "Please enter your new password:\n"
+    } else {
+        "Please enter the password for this account:\n"
+    };
+
     input::<String>()
-        .repeat_msg("Please enter the password for this account:\n")
+        .repeat_msg(msg)
         .add_err_test(move |input| !(input.len() < 8), "\nPassword too short\n")
         .add_err_test(move |input| !(input.len() > 64), "\nPassword too long\n")
         .add_err_test(

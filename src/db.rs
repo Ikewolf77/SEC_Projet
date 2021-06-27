@@ -11,7 +11,7 @@ use std::path::Path;
 use std::sync::Mutex;
 use uuid::Uuid;
 
-use log::{error, info, trace, warn};
+use log::{info, trace, warn};
 
 pub mod big_array;
 use big_array::BigArray;
@@ -26,6 +26,10 @@ use utils::ask_for_name;
 use utils::ask_for_pw;
 
 pub mod access_control;
+
+pub mod email;
+use email::send_password_mail;
+use rand::Rng;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct User {
@@ -108,7 +112,7 @@ pub fn create_account(user: &UserDTO, is_teacher_account: bool) {
 
     //ask for info
     let email = &ask_for_email(false);
-    let pw = ask_for_pw();
+    let pw = ask_for_pw(false);
     let name = ask_for_name();
     let id = &Uuid::new_v4().to_string();
 
@@ -130,7 +134,7 @@ pub fn create_account(user: &UserDTO, is_teacher_account: bool) {
             .open(access_control::POLICY)
             .unwrap();
         let mut wtr = WriterBuilder::new()
-            .quote_style(csv::QuoteStyle::Never)
+            .quote_style(QuoteStyle::Never)
             .from_writer(file);
         wtr.write_record(&[&format!("\ng, {}, teacher", id)])
             .unwrap();
@@ -144,8 +148,53 @@ pub fn create_account(user: &UserDTO, is_teacher_account: bool) {
     save_database_to_file();
 }
 
-pub fn enter_grade() {
+pub fn reset_password(user: &UserDTO) {
+    trace!("reset_password");
+
+    if user.id.eq("admin") {
+        println!("That's the one thing you cannot do! Change the password directly in the code");
+        return;
+    }
+
+    println!("A token will been sent to the email");
+    let mut rng = rand::thread_rng();
+    let code = rng.gen_range(100000..999999);
+    send_password_mail(&user.email, &code.to_string());
+    info!("{} asked for a password change", user.email);
+
+    //if we find the email, ask for it
+    let code_entered = &input()
+        .inside(100000..999999)
+        .msg("Please enter the token sent (6 numbers):\n")
+        .get();
+
+    if code == *code_entered {
+        let pw = ask_for_pw(true);
+        let mut data = DATABASE.lock().unwrap();
+        for i in 0..(data.len()) {
+            let mut curr_user = &mut data[i];
+            if curr_user.email.eq(&user.email) {
+                curr_user.pw_hash = padded_hash(&pw);
+                return;
+            }
+        }
+        info!("Succesfull password reset for {}", user.email);
+    } else {
+        println!("Wrong code");
+        warn!("Unsuccesfull password reset for {}", user.email)
+    }
+
+    save_database_to_file()
+}
+
+pub fn enter_grade(user: &UserDTO) {
     trace!("Enter_grade");
+
+    if !block_on(access_control::auth(user, access_control::ENTER_GRADE)) {
+        println!("{}", NOT_ALLOWED_MSG);
+        return;
+    }
+
     let email = ask_for_email(false);
     println!("What is the new grade of the student?");
     let grade: f32 = input().add_test(|x| *x >= 0.0 && *x <= 6.0).get();
@@ -158,27 +207,36 @@ pub fn enter_grade() {
         }
     }
     println!("No Student found with that email");
-    warn!("No Student found with that email");
+    warn!("No Student found with that email by {}", user.email);
 
     std::mem::drop(data);
     save_database_to_file();
 }
 
-pub fn show_grades() {
+pub fn show_grades(user: &UserDTO) {
     trace!("Show_grades");
+    let mut is_teacher = true;
+
+    if !block_on(access_control::auth(user, access_control::SHOW_GRADES)) {
+        is_teacher = false;
+    }
+
     let mut data = DATABASE.lock().unwrap();
     let mut res = "".to_owned();
     for i in 0..(data.len()) {
-        let user = &mut data[i];
-        if !user.grades.is_empty() {
+        let curr_user = &mut data[i];
+        if !curr_user.grades.is_empty() && (is_teacher || user.id.eq(&curr_user.id)) {
             res.push_str(&format!(
                 "{} : {:?} Mean : {}\n",
-                user.email,
-                user.grades,
-                (user.grades.iter().sum::<f32>()) / ((*user.grades).len() as f32)
+                curr_user.email,
+                curr_user.grades,
+                (curr_user.grades.iter().sum::<f32>()) / ((*curr_user.grades).len() as f32)
             ))
         }
     }
+
+    println!("{}", res);
+    info!("Successfully showed grades to {}", user.email);
 }
 
 pub fn read_database_from_file<P: AsRef<Path>>(path: P) -> Result<Vec<User>, Box<dyn Error>> {
