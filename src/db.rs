@@ -7,6 +7,8 @@ use std::io::{BufReader, BufWriter};
 use std::path::Path;
 use std::sync::Mutex;
 
+use log::{error, info, trace, warn};
+
 const DATABASE_FILE: &str = "db.txt";
 
 lazy_static! {
@@ -17,6 +19,7 @@ lazy_static! {
 }
 
 pub fn enter_grade() {
+    trace!("Enter_grade");
     println!("What is the name of the student?");
     let name: String = input().get();
     println!("What is the new grade of the student?");
@@ -31,6 +34,7 @@ pub fn enter_grade() {
 }
 
 pub fn show_grades(message: &str) {
+    trace!("Show_grades");
     println!("{}", message);
     let name: String = input().get();
     println!("Here are the grades of user {}", name);
@@ -50,6 +54,7 @@ pub fn show_grades(message: &str) {
 pub fn read_database_from_file<P: AsRef<Path>>(
     path: P,
 ) -> Result<HashMap<String, Vec<f32>>, Box<dyn Error>> {
+    trace!("Read_database");
     let file = File::open(path)?;
     let reader = BufReader::new(file);
     let map = serde_json::from_reader(reader)?;
@@ -57,6 +62,7 @@ pub fn read_database_from_file<P: AsRef<Path>>(
 }
 
 pub fn save_database_to_file() {
+    trace!("Save_database");
     let file = File::create(DATABASE_FILE).unwrap();
     let writer = BufWriter::new(file);
     serde_json::to_writer(writer, DATABASE.lock().unwrap().deref()).unwrap();

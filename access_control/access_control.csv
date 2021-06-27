@@ -1,0 +1,5 @@
+p, admin, create_teacher_account
+p, teacher, create_account
+p, teacher, show_all_grades
+
+p, admin, teacher
