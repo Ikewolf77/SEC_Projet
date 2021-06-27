@@ -8,7 +8,7 @@ appenders:
     target: stderr
     filters:
     - kind: "threshold"
-      level: "warn"
+      level: "error"
 
   # An appender named "logfile" that writes to a file with a custom pattern encoder
   logfile:

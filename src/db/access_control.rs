@@ -1,24 +1,18 @@
 use casbin::prelude::*;
 use log::{error, info, trace, warn};
 
-extern crate strum;
-
-use super::db::User;
+use super::UserDTO;
 
 const CONFIG: &str = "accessControl/access_control.conf";
 const POLICY: &str = "accessControl/access_control.csv";
 
-#[derive(Display, Debug)]
-enum Role {
-    #[strum(serialize = "admin")]
-    Admin,
-    #[strum(serialize = "teacher")]
-    Teacher,
-    Student,
-}
+pub const TEACHER_ACC: &str = "create_teacher_account";
+pub const STUDENT_ACC: &str = "create_account";
+pub const SHOW_GRADES: &str = "show_all_grades";
+pub const ENTER_GRADE: &str = "enter_grade";
 
 ///Centralized access control mechanism
-pub async fn auth(subject: &User, ressource: &str) -> bool {
+pub async fn auth(subject: &UserDTO, ressource: &str) -> bool {
     trace!("Auth");
     let e = Enforcer::new(CONFIG, POLICY)
         .await

@@ -28,6 +28,7 @@ Pour se loger, un personne donne son email professionel et son mot de passe, dé
 - Chaque réussite d'action crée un "Info"
 - Chaque failure d'action crée un "Warn"
 - Chaque crash ou comportement inattendu crée un "Error"
+- Les erreurs sont affichées à la console également
 
 ## Input / Output :
 - Chaque input est parsé et vérifié selon le type d'action
